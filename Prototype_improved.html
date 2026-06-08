@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gmail Redesign – FIS Capstone Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Roboto',sans-serif;background:#f6f8fc;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* TOP BAR */
+.topbar{display:flex;align-items:center;padding:8px 16px;background:#f6f8fc;height:64px;gap:8px;flex-shrink:0;}
+.topbar-logo{display:flex;align-items:center;gap:4px;padding:0 8px;min-width:210px;}
+.logo-text{font-size:22px;font-weight:400;letter-spacing:-0.5px;}
+.logo-m{color:#EA4335}.logo-a{color:#FBBC04}.logo-i{color:#34A853}.logo-l{color:#4285F4}
+.search-bar{flex:1;display:flex;align-items:center;background:#eaf1fb;border-radius:24px;padding:0 16px;height:48px;gap:8px;transition:background .2s,box-shadow .2s;cursor:text;max-width:720px;}
+.search-bar:hover,.search-bar:focus-within{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.search-bar input{border:none;background:transparent;font-size:16px;color:#202124;outline:none;flex:1;font-family:'Roboto',sans-serif;}
+.search-bar .material-icons{color:#5f6368;cursor:pointer;}
+.topbar-actions{display:flex;align-items:center;gap:4px;margin-left:auto;}
+.icon-btn{width:40px;height:40px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#5f6368;transition:background .2s;font-family:'Roboto',sans-serif;}
+.icon-btn:hover{background:rgba(32,33,36,.08);}
+.avatar{width:32px;height:32px;border-radius:50%;background:#1a73e8;color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;cursor:pointer;flex-shrink:0;}
+
+/* MAIN */
+.main{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:256px;padding:8px 0;overflow-y:auto;flex-shrink:0;}
+.compose-btn{display:flex;align-items:center;gap:12px;margin:8px 16px 16px;padding:16px 24px;background:#c2e7ff;border:none;border-radius:16px;cursor:pointer;font-family:'Roboto',sans-serif;font-size:14px;font-weight:500;color:#001d35;transition:box-shadow .2s,background .2s;width:calc(100% - 32px);}
+.compose-btn:hover{box-shadow:0 1px 3px rgba(0,0,0,.3);background:#a8d7f5;}
+.nav-item{display:flex;align-items:center;gap:16px;padding:0 16px;height:32px;border-radius:0 16px 16px 0;cursor:pointer;font-size:14px;color:#202124;transition:background .2s;margin-right:16px;user-select:none;}
+.nav-item:hover{background:rgba(32,33,36,.08);}
+.nav-item.active{background:#d3e3fd;font-weight:700;}
+.nav-item .badge{margin-left:auto;font-size:12px;font-weight:500;color:#202124;}
+.nav-item .material-icons{font-size:20px;color:#444746;}
+.nav-divider{height:1px;background:#e0e0e0;margin:8px 0;}
+.nav-label{padding:8px 16px 4px;font-size:11px;font-weight:500;color:#5f6368;text-transform:uppercase;letter-spacing:.5px;}
+
+/* CONTENT */
+.content{flex:1;background:#fff;border-radius:16px;margin:0 16px 16px 0;overflow:hidden;display:flex;flex-direction:column;}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid #e0e0e0;padding:0 8px;flex-shrink:0;}
+.tab{display:flex;align-items:center;gap:8px;padding:0 16px;height:48px;border-bottom:3px solid transparent;cursor:pointer;font-size:13px;color:#5f6368;transition:color .2s;white-space:nowrap;user-select:none;}
+.tab:hover{color:#202124;background:rgba(32,33,36,.04);}
+.tab.active{color:#1a73e8;border-bottom-color:#1a73e8;font-weight:500;}
+.tab .material-icons{font-size:18px;}
+.tab-count{background:#1a73e8;color:white;border-radius:8px;padding:1px 6px;font-size:11px;}
+
+/* VIEWS */
+.view{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.view.active{display:flex;}
+.email-list{flex:1;overflow-y:auto;}
+
+/* SECTION HEADER (Needs Attention) */
+.attention-section{border-bottom:1px solid #e0e0e0;padding:6px 0;}
+.section-header{display:flex;align-items:center;gap:8px;padding:6px 16px;cursor:pointer;user-select:none;}
+.section-header .section-title{font-size:12px;font-weight:500;color:#5f6368;text-transform:uppercase;letter-spacing:.5px;}
+.section-header .material-icons{font-size:16px;color:#5f6368;margin-left:auto;}
+.attention-chips{display:flex;gap:8px;padding:4px 16px 10px;flex-wrap:wrap;}
+.attention-chip{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;font-size:13px;cursor:pointer;transition:filter .15s;border:1px solid;}
+.attention-chip:hover{filter:brightness(.95);}
+.chip-followup{background:#fef7e0;border-color:#fbbc04;color:#5a3e00;}
+.chip-followup .material-icons{color:#fbbc04;font-size:16px;}
+.chip-draft{background:#fce8e6;border-color:#ea4335;color:#5c0e07;}
+.chip-draft .material-icons{color:#ea4335;font-size:16px;}
+
+/* EMAIL ROW */
+.email-row{display:flex;align-items:center;gap:8px;padding:0 16px;height:52px;border-bottom:1px solid #f1f3f4;cursor:pointer;transition:background .1s,box-shadow .1s;position:relative;}
+.email-row:hover{background:#f2f6fc;box-shadow:0 1px 2px rgba(0,0,0,.1);z-index:1;}
+.email-row.unread{background:#fff;}
+.email-row.unread .email-sender,.email-row.unread .email-subject,.email-row.unread .email-time{font-weight:700;color:#202124;}
+.email-row.read{background:#f6f8fc;}
+.email-checkbox{width:18px;height:18px;border:2px solid #bdc1c6;border-radius:2px;flex-shrink:0;cursor:pointer;opacity:0;transition:opacity .1s;accent-color:#1a73e8;}
+.email-row:hover .email-checkbox{opacity:1;}
+.email-star{width:20px;height:20px;cursor:pointer;font-size:20px;flex-shrink:0;opacity:0;transition:opacity .1s,color .1s;color:#bdc1c6;}
+.email-row:hover .email-star{opacity:1;}
+.email-star.starred{color:#f4b400;opacity:1;}
+.email-sender{width:170px;font-size:14px;color:#202124;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+.email-body{flex:1;display:flex;align-items:center;gap:0;overflow:hidden;}
+.email-subject{font-size:14px;color:#202124;white-space:nowrap;flex-shrink:0;}
+.email-snippet{font-size:14px;color:#5f6368;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.email-snippet::before{content:' – ';}
+.email-meta{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:8px;}
+.followup-badge{display:flex;align-items:center;gap:3px;background:#fef7e0;border:1px solid #fbbc04;border-radius:4px;padding:2px 6px;font-size:11px;color:#5a3e00;font-weight:500;white-space:nowrap;}
+.followup-badge .material-icons{font-size:12px;color:#fbbc04;}
+.read-status{display:flex;align-items:center;}
+.status-sent{color:#9aa0a6;}
+.status-delivered{color:#9aa0a6;}
+.status-read{color:#1a73e8;}
+.email-attachment{color:#5f6368;font-size:18px;}
+.email-time{font-size:12px;color:#5f6368;white-space:nowrap;min-width:44px;text-align:right;}
+.email-row.unread .email-time{font-weight:700;color:#202124;}
+
+/* PROMOTIONS DIVIDER */
+.promotions-divider{display:flex;align-items:center;gap:12px;padding:10px 16px;background:#f6f8fc;border-top:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;cursor:pointer;user-select:none;}
+.promotions-divider .material-icons{color:#1a73e8;font-size:18px;}
+.promotions-divider .promo-label{font-size:13px;color:#3c4043;font-weight:500;flex:1;}
+.promotions-divider .promo-toggle{font-size:12px;color:#1a73e8;font-weight:500;}
+.promotions-rows{display:none;}
+.promotions-rows.expanded{display:block;}
+
+/* SEARCH */
+.search-filters{display:flex;gap:8px;padding:10px 16px;border-bottom:1px solid #e0e0e0;flex-wrap:wrap;align-items:center;flex-shrink:0;}
+.filter-label{font-size:13px;color:#5f6368;white-space:nowrap;}
+.filter-chip{display:flex;align-items:center;gap:4px;padding:6px 12px;border:1px solid #dadce0;border-radius:16px;font-size:13px;color:#3c4043;cursor:pointer;background:white;transition:background .2s,border-color .2s;font-family:'Roboto',sans-serif;user-select:none;}
+.filter-chip:hover{background:#f1f3f4;}
+.filter-chip.active{background:#d3e3fd;border-color:#1a73e8;color:#1a73e8;font-weight:500;}
+.filter-chip .material-icons{font-size:16px;}
+.search-result-header{padding:10px 16px;font-size:13px;color:#5f6368;border-bottom:1px solid #f1f3f4;flex-shrink:0;}
+
+/* SENT STATUS */
+.sent-status-legend{display:flex;gap:16px;padding:8px 16px;background:#f6f8fc;border-bottom:1px solid #e0e0e0;font-size:12px;color:#5f6368;align-items:center;flex-shrink:0;}
+.legend-item{display:flex;align-items:center;gap:4px;}
+
+/* VIEW HEADER */
+.view-header{padding:14px 16px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.view-header .material-icons{font-size:20px;}
+.view-header h2{font-size:16px;font-weight:500;color:#202124;}
+.view-header .sub{font-size:13px;color:#5f6368;margin-left:4px;}
+
+/* COMPOSE MODAL */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.32);z-index:100;align-items:flex-end;justify-content:flex-end;padding:0 16px 16px 0;}
+.modal-overlay.open{display:flex;}
+.compose-window{width:560px;max-height:520px;background:white;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden;}
+.compose-header{display:flex;align-items:center;padding:8px 16px;background:#404040;color:white;flex-shrink:0;}
+.compose-header span{font-size:14px;flex:1;}
+.compose-hbtn{background:transparent;border:none;color:#ccc;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+.compose-hbtn:hover{background:rgba(255,255,255,.15);color:white;}
+.compose-field{display:flex;align-items:center;padding:8px 16px;border-bottom:1px solid #e0e0e0;gap:8px;flex-shrink:0;}
+.compose-field label{font-size:13px;color:#5f6368;min-width:36px;}
+.compose-field input{flex:1;border:none;outline:none;font-size:14px;font-family:'Roboto',sans-serif;}
+.compose-field.recipient-field{position:relative;}
+.recipient-suggestions{display:none;position:absolute;left:56px;right:16px;top:36px;background:white;border:1px solid #dadce0;border-radius:8px;box-shadow:0 4px 12px rgba(60,64,67,.25);z-index:5;overflow:hidden;}
+.recipient-suggestions.open{display:block;}
+.recipient-suggestion{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;font-size:13px;color:#202124;}
+.recipient-suggestion:hover{background:#f1f3f4;}
+.recipient-avatar{width:28px;height:28px;border-radius:50%;background:#e8f0fe;color:#1967d2;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0;}
+.recipient-meta{display:flex;flex-direction:column;min-width:0;}
+.recipient-name{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.recipient-email{color:#5f6368;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.draft-reminder.neutral{background:#e8f0fe;color:#174ea6;}
+.draft-reminder.neutral .material-icons{color:#174ea6;}
+.label-dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0;}
+.label-university{background:#1a73e8;}
+.label-receipts{background:#34a853;}
+.label-travel{background:#fbbc04;}
+.email-label{font-size:11px;border-radius:4px;padding:2px 6px;background:#eef2ff;color:#174ea6;white-space:nowrap;}
+
+.field-action{font-size:13px;color:#1a73e8;cursor:pointer;}
+.compose-body{flex:1;padding:8px 16px;display:flex;flex-direction:column;gap:8px;overflow:hidden;}
+.subject-field{border:none;outline:none;font-size:14px;font-family:'Roboto',sans-serif;border-bottom:1px solid #e0e0e0;padding-bottom:8px;font-weight:500;}
+.compose-body textarea{flex:1;border:none;outline:none;font-size:14px;font-family:'Roboto',sans-serif;resize:none;line-height:1.6;min-height:120px;}
+.draft-reminder{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#fce8e6;border-radius:4px;font-size:12px;color:#c5221f;flex-shrink:0;}
+.draft-reminder .material-icons{font-size:16px;flex-shrink:0;}
+.draft-reminder a{color:#c5221f;font-weight:500;cursor:pointer;text-decoration:underline;}
+.read-receipt-row{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.toggle-switch{position:relative;width:36px;height:20px;flex-shrink:0;}
+.toggle-switch input{display:none;}
+.toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#bdc1c6;border-radius:10px;transition:background .2s;}
+.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;background:white;border-radius:50%;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.3);}
+.toggle-switch input:checked+.toggle-slider{background:#1a73e8;}
+.toggle-switch input:checked+.toggle-slider::before{transform:translateX(16px);}
+.rr-label{font-size:12px;color:#5f6368;}
+.compose-footer{display:flex;align-items:center;padding:8px 16px;gap:4px;border-top:1px solid #e0e0e0;flex-shrink:0;}
+.send-btn{background:#1a73e8;color:white;border:none;border-radius:4px;padding:8px 24px;font-size:14px;font-weight:500;font-family:'Roboto',sans-serif;cursor:pointer;transition:background .2s,box-shadow .2s;}
+.send-btn:hover{background:#1557b0;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+
+/* PERSONAS MODAL */
+.personas-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.personas-modal.open{display:flex;}
+.personas-panel{background:white;border-radius:16px;width:100%;max-width:920px;max-height:90vh;overflow-y:auto;padding:32px;}
+.personas-panel h2{font-size:22px;color:#202124;margin-bottom:8px;}
+.personas-subtitle{font-size:13px;color:#5f6368;margin-bottom:24px;line-height:1.6;}
+.personas-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.persona-card{border:2px solid #e0e0e0;border-radius:12px;padding:20px;}
+.persona-card.positive{border-color:#34a853;}
+.persona-card.secondary{border-color:#1a73e8;}
+.persona-card.negative{border-color:#ea4335;}
+.card-type{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.persona-card.positive .card-type{color:#34a853;}
+.persona-card.secondary .card-type{color:#1a73e8;}
+.persona-card.negative .card-type{color:#ea4335;}
+.persona-card h3{font-size:18px;color:#202124;margin-bottom:2px;}
+.persona-role{font-size:13px;color:#5f6368;margin-bottom:12px;}
+.persona-card p{font-size:13px;color:#3c4043;line-height:1.6;margin-bottom:6px;}
+.persona-card strong{color:#202124;}
+.design-note{margin-top:24px;padding:16px;background:#f6f8fc;border-radius:8px;font-size:13px;color:#5f6368;line-height:1.7;}
+
+/* SNACKBAR */
+.snackbar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#323232;color:white;padding:12px 24px;border-radius:4px;font-size:14px;z-index:300;transition:transform .3s;pointer-events:none;white-space:nowrap;}
+.snackbar.show{transform:translateX(-50%) translateY(0);}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-thumb{background:#dadce0;border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:#bdc1c6;}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <button class="icon-btn" onclick="toggleSidebar()" title="Main menu"><span class="material-icons">menu</span></button>
+    <span class="logo-text" style="margin-left:4px;">
+      <span class="logo-m">G</span><span class="logo-a">m</span><span class="logo-i">a</span><span class="logo-i" style="color:#EA4335">i</span><span class="logo-l">l</span>
+    </span>
+  </div>
+  <div class="search-bar" onclick="document.getElementById('searchInput').focus()">
+    <span class="material-icons">search</span>
+    <input id="searchInput" type="text" placeholder="Search mail" onkeydown="if(event.key==='Enter')showSearch()">
+    <span class="material-icons" onclick="showSearch()" title="Search with filters">tune</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" title="Help" onclick="showSnack('Help opened')"><span class="material-icons">help_outline</span></button>
+    <button class="icon-btn" title="Settings" onclick="showSnack('Settings opened')"><span class="material-icons">settings</span></button>
+    <button class="icon-btn" title="View Personas" onclick="document.getElementById('personasModal').classList.add('open')">
+      <span class="material-icons">people</span>
+    </button>
+    <div class="avatar" title="Theo – Primary Persona">T</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <button class="compose-btn" onclick="openCompose()">
+      <span class="material-icons">edit</span>Compose
+    </button>
+    <div class="nav-item active" id="nav-inbox" onclick="showView('inbox',this)">
+      <span class="material-icons">inbox</span>Inbox<span class="badge">3</span>
+    </div>
+    <div class="nav-item" id="nav-starred" onclick="showView('starred',this)">
+      <span class="material-icons">star_border</span>Starred
+    </div>
+    <div class="nav-item" id="nav-followup" onclick="showView('followup',this)">
+      <span class="material-icons" style="color:#fbbc04">flag</span>Follow-up<span class="badge" style="color:#b7880a">2</span>
+    </div>
+    <div class="nav-item" id="nav-sent" onclick="showView('sent',this)">
+      <span class="material-icons">send</span>Sent
+    </div>
+    <div class="nav-item" id="nav-drafts" onclick="showView('drafts',this)">
+      <span class="material-icons">drafts</span>Drafts<span class="badge" style="color:#c5221f">1</span>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-label">Categories</div>
+    <div class="nav-item" id="nav-promotions" onclick="showView('promotions',this)">
+      <span class="material-icons" style="color:#1a73e8">local_offer</span>Promotions<span class="badge">4</span>
+    </div>
+    <div class="nav-item" id="nav-social" onclick="showView('social',this)">
+      <span class="material-icons" style="color:#34a853">group</span>Social<span class="badge">2</span>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-label">Labels</div>
+    <div class="nav-item" id="nav-label-university" onclick="showView('label-university',this)">
+      <span class="label-dot label-university"></span>University<span class="badge">3</span>
+    </div>
+    <div class="nav-item" id="nav-label-receipts" onclick="showView('label-receipts',this)">
+      <span class="label-dot label-receipts"></span>Receipts<span class="badge">2</span>
+    </div>
+    <div class="nav-item" id="nav-label-travel" onclick="showView('label-travel',this)">
+      <span class="label-dot label-travel"></span>Travel<span class="badge">1</span>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ===== INBOX VIEW ===== -->
+    <div class="view active" id="view-inbox">
+      <div class="tabs">
+        <div class="tab active" onclick="setTab(this)"><span class="material-icons">inbox</span>Primary<span class="tab-count">3</span></div>
+        <div class="tab" onclick="setTab(this);showView('social',document.getElementById('nav-social'))"><span class="material-icons">group</span>Social</div>
+        <div class="tab" onclick="setTab(this);showView('promotions',document.getElementById('nav-promotions'))"><span class="material-icons">local_offer</span>Promotions</div>
+      </div>
+      <div class="email-list">
+
+        <!-- N1 + N4: Needs Attention -->
+        <div class="attention-section" id="attnSection">
+          <div class="section-header" onclick="toggleSection()">
+            <span class="section-title">Needs Attention</span>
+            <span class="material-icons" id="attnIcon">expand_less</span>
+          </div>
+          <div class="attention-chips" id="attnChips">
+            <div class="attention-chip chip-followup" onclick="showView('followup',document.getElementById('nav-followup'))">
+              <span class="material-icons">flag</span>2 follow-ups pending
+            </div>
+            <div class="attention-chip chip-draft" onclick="showView('drafts',document.getElementById('nav-drafts'))">
+              <span class="material-icons">drafts</span>1 unfinished draft
+            </div>
+          </div>
+        </div>
+
+        <!-- Unread -->
+        <div class="email-row unread" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star starred">star</span>
+          <span class="email-sender">Dr.-Ing. Martin Feick</span>
+          <div class="email-body">
+            <span class="email-subject">Marks of the Deliverable 1</span>
+            <span class="email-snippet">Here you can find the marks for the first deliverable.</span>
+          </div>
+          <div class="email-meta">
+            <div class="followup-badge"><span class="material-icons">flag</span>Follow-up</div>
+            <span class="material-icons email-attachment">attach_file</span>
+            <span class="email-time">10:24</span>
+          </div>
+        </div>
+
+        <div class="email-row unread" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star">star_border</span>
+          <span class="email-sender">GitHub</span>
+          <div class="email-body">
+            <span class="email-subject">[Capstone-Repo] Pull request #4 merged</span>
+            <span class="email-snippet">Leonard merged your pull request into main</span>
+          </div>
+          <div class="email-meta"><span class="email-time">09:51</span></div>
+        </div>
+
+        <div class="email-row unread" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star">star_border</span>
+          <span class="email-sender">KIT Studierendenwerk</span>
+          <div class="email-body">
+            <span class="email-subject">BAföG Bescheid – Antwort erforderlich</span>
+            <span class="email-snippet">Bitte reichen Sie Ihre Nachweise bis zum 15. Juni ein</span>
+          </div>
+          <div class="email-meta">
+            <div class="followup-badge"><span class="material-icons">flag</span>Follow-up</div>
+            <span class="email-time">Yesterday</span>
+          </div>
+        </div>
+
+        <!-- Read -->
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star starred">star</span>
+          <span class="email-sender">Google Drive</span>
+          <div class="email-body">
+            <span class="email-subject">Capstone_Report_final.pdf shared</span>
+            <span class="email-snippet">Malik shared a file with you</span>
+          </div>
+          <div class="email-meta">
+            <span class="material-icons email-attachment">attach_file</span>
+            <span class="email-time">Mon</span>
+          </div>
+        </div>
+
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star">star_border</span>
+          <span class="email-sender">Spotify</span>
+          <div class="email-body">
+            <span class="email-subject">Your June playlist is ready</span>
+            <span class="email-snippet">We made something just for you this month</span>
+          </div>
+          <div class="email-meta"><span class="email-time">Sun</span></div>
+        </div>
+
+        <!-- N5: Promotions separator -->
+        <div class="promotions-divider" onclick="togglePromotions()">
+          <span class="material-icons">local_offer</span>
+          <span class="promo-label">4 promotions — kept out of your way</span>
+          <span class="promo-toggle" id="promoToggleLabel">Show</span>
+        </div>
+        <div class="promotions-rows" id="promotionsRows">
+          <div class="email-row read" onclick="showSnack('Opening email…')">
+            <input type="checkbox" class="email-checkbox">
+            <span class="material-icons email-star">star_border</span>
+            <span class="email-sender">Amazon</span>
+            <div class="email-body"><span class="email-subject">Your order has shipped!</span><span class="email-snippet">Estimated delivery: June 7</span></div>
+            <div class="email-meta"><span class="email-time">Sat</span></div>
+          </div>
+          <div class="email-row read" onclick="showSnack('Opening email…')">
+            <input type="checkbox" class="email-checkbox">
+            <span class="material-icons email-star">star_border</span>
+            <span class="email-sender">Zalando</span>
+            <div class="email-body"><span class="email-subject">Up to 50% off – Summer Sale starts now</span><span class="email-snippet">Shop the biggest deals of the season</span></div>
+            <div class="email-meta"><span class="email-time">Fri</span></div>
+          </div>
+          <div class="email-row read" onclick="showSnack('Opening email…')">
+            <input type="checkbox" class="email-checkbox">
+            <span class="material-icons email-star">star_border</span>
+            <span class="email-sender">Netflix</span>
+            <div class="email-body"><span class="email-subject">New on Netflix this week</span><span class="email-snippet">See what just dropped</span></div>
+            <div class="email-meta"><span class="email-time">Thu</span></div>
+          </div>
+          <div class="email-row read" onclick="showSnack('Opening email…')">
+            <input type="checkbox" class="email-checkbox">
+            <span class="material-icons email-star">star_border</span>
+            <span class="email-sender">Booking.com</span>
+            <div class="email-body"><span class="email-subject">Reminder: your trip is coming up</span><span class="email-snippet">Your stay in Munich is in 2 weeks</span></div>
+            <div class="email-meta"><span class="email-time">Thu</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FOLLOW-UP VIEW ===== -->
+    <div class="view" id="view-followup">
+      <div class="view-header">
+        <span class="material-icons" style="color:#fbbc04">flag</span>
+        <h2>Follow-up</h2><span class="sub">2 pending action</span>
+      </div>
+      <div class="email-list">
+        <div class="email-row unread" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star starred">star</span>
+          <span class="email-sender">Dr.-Ing. Martin Feick</span>
+          <div class="email-body"><span class="email-subject">Meeting summary required</span><span class="email-snippet">Please send the summary from Thursday's session</span></div>
+          <div class="email-meta"><div class="followup-badge"><span class="material-icons">flag</span>Follow-up</div><span class="email-time">10:24</span></div>
+        </div>
+        <div class="email-row unread" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star">star_border</span>
+          <span class="email-sender">KIT Studierendenwerk</span>
+          <div class="email-body"><span class="email-subject">BAföG Bescheid – Antwort erforderlich</span><span class="email-snippet">Bitte reichen Sie Ihre Nachweise bis zum 15. Juni ein</span></div>
+          <div class="email-meta"><div class="followup-badge"><span class="material-icons">flag</span>Follow-up</div><span class="email-time">Yesterday</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DRAFTS VIEW ===== -->
+    <div class="view" id="view-drafts">
+      <div class="view-header">
+        <span class="material-icons" style="color:#ea4335">drafts</span>
+        <h2>Drafts</h2><span class="sub">1 unfinished</span>
+      </div>
+      <div class="email-list">
+        <div class="email-row unread" onclick="openCompose('santiago.t@gmail.com')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star">star_border</span>
+          <span class="email-sender" style="color:#ea4335;font-weight:700;">Draft</span>
+          <div class="email-body">
+            <span class="email-subject" style="color:#ea4335;">Re: Project update for Q3</span>
+            <span class="email-snippet">Hi Santiago, I wanted to follow up on the timeline we discussed</span>
+          </div>
+          <div class="email-meta"><span class="email-time">3 days ago</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== STARRED VIEW ===== -->
+    <div class="view" id="view-starred">
+      <div class="view-header">
+        <span class="material-icons" style="color:#f4b400">star</span>
+        <h2>Starred</h2>
+      </div>
+      <div class="email-list">
+        <div class="email-row unread" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star starred">star</span>
+          <span class="email-sender">Dr.-Ing. Martin Feick</span>
+          <div class="email-body"><span class="email-subject">Meeting summary required</span><span class="email-snippet">Please send the summary from Thursday's session</span></div>
+          <div class="email-meta"><div class="followup-badge"><span class="material-icons">flag</span>Follow-up</div><span class="email-time">10:24</span></div>
+        </div>
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star starred">star</span>
+          <span class="email-sender">Google Drive</span>
+          <div class="email-body"><span class="email-subject">Capstone_Report_final.pdf shared</span><span class="email-snippet">Malik shared a file with you</span></div>
+          <div class="email-meta"><span class="material-icons email-attachment">attach_file</span><span class="email-time">Mon</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SENT VIEW ===== -->
+    <div class="view" id="view-sent">
+      <div class="sent-status-legend">
+        <span style="font-size:13px;font-weight:500;color:#3c4043;margin-right:4px;">Delivery status (N6):</span>
+        <div class="legend-item"><span class="material-icons status-sent" style="font-size:15px;">check</span>&nbsp;Sent</div>
+        <div class="legend-item"><span class="material-icons status-delivered" style="font-size:15px;">done_all</span>&nbsp;Delivered</div>
+        <div class="legend-item"><span class="material-icons status-read" style="font-size:15px;">done_all</span>&nbsp;Read</div>
+      </div>
+      <div class="email-list">
+        <div class="email-row" onclick="showSnack('Opening sent email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star">star_border</span>
+          <span class="email-sender">To: Santiago T.</span>
+          <div class="email-body"><span class="email-subject">Re: Interview schedule for round 2</span><span class="email-snippet">Hi Santiago, confirmed the slot for Thursday at 3pm</span></div>
+          <div class="email-meta">
+            <span class="read-status status-read" title="Read by recipient"><span class="material-icons" style="font-size:17px;">done_all</span></span>
+            <span class="email-time">11:02</span>
+          </div>
+        </div>
+        <div class="email-row" onclick="showSnack('Opening sent email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star">star_border</span>
+          <span class="email-sender">To: Dr.-Ing. Martin Feick</span>
+          <div class="email-body"><span class="email-subject">Capstone Report – Round 1 Submission</span><span class="email-snippet">Dear Professor, please find attached our Round 1 report</span></div>
+          <div class="email-meta">
+            <span class="material-icons email-attachment">attach_file</span>
+            <span class="read-status status-delivered" title="Delivered, not yet read"><span class="material-icons" style="font-size:17px;">done_all</span></span>
+            <span class="email-time">Yesterday</span>
+          </div>
+        </div>
+        <div class="email-row" onclick="showSnack('Opening sent email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star">star_border</span>
+          <span class="email-sender">To: Malik A.</span>
+          <div class="email-body"><span class="email-subject">User interview questions – finalized</span><span class="email-snippet">Here is the final version of the interview guide</span></div>
+          <div class="email-meta">
+            <span class="read-status status-read" title="Read by recipient"><span class="material-icons" style="font-size:17px;">done_all</span></span>
+            <span class="email-time">Mon</span>
+          </div>
+        </div>
+        <div class="email-row" onclick="showSnack('Opening sent email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star">star_border</span>
+          <span class="email-sender">To: Leonard L.</span>
+          <div class="email-body"><span class="email-subject">Draft section 3.2 – feedback welcome</span><span class="email-snippet">Let me know if you want to revise the user needs section</span></div>
+          <div class="email-meta">
+            <span class="read-status status-sent" title="Sent – awaiting delivery"><span class="material-icons" style="font-size:17px;">check</span></span>
+            <span class="email-time">Sun</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ===== PROMOTIONS VIEW ===== -->
+    <div class="view" id="view-promotions">
+      <div class="view-header">
+        <span class="material-icons" style="color:#1a73e8">local_offer</span>
+        <h2>Promotions</h2><span class="sub">4 kept separate from important mail</span>
+      </div>
+      <div class="email-list">
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox"><span class="material-icons email-star">star_border</span>
+          <span class="email-sender">Amazon</span><div class="email-body"><span class="email-subject">Your order has shipped!</span><span class="email-snippet">Estimated delivery: June 7</span></div><div class="email-meta"><span class="email-time">Sat</span></div>
+        </div>
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox"><span class="material-icons email-star">star_border</span>
+          <span class="email-sender">Zalando</span><div class="email-body"><span class="email-subject">Up to 50% off – Summer Sale starts now</span><span class="email-snippet">Shop the biggest deals of the season</span></div><div class="email-meta"><span class="email-time">Fri</span></div>
+        </div>
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox"><span class="material-icons email-star">star_border</span>
+          <span class="email-sender">Netflix</span><div class="email-body"><span class="email-subject">New on Netflix this week</span><span class="email-snippet">See what just dropped</span></div><div class="email-meta"><span class="email-time">Thu</span></div>
+        </div>
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox"><span class="material-icons email-star">star_border</span>
+          <span class="email-sender">Booking.com</span><div class="email-body"><span class="email-subject">Reminder: your trip is coming up</span><span class="email-snippet">Your stay in Munich is in 2 weeks</span></div><div class="email-meta"><span class="email-time">Thu</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SOCIAL VIEW ===== -->
+    <div class="view" id="view-social">
+      <div class="view-header">
+        <span class="material-icons" style="color:#34a853">group</span>
+        <h2>Social</h2><span class="sub">2 updates</span>
+      </div>
+      <div class="email-list">
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox"><span class="material-icons email-star">star_border</span>
+          <span class="email-sender">LinkedIn</span><div class="email-body"><span class="email-subject">Someone viewed your profile</span><span class="email-snippet">See who visited this week</span></div><div class="email-meta"><span class="email-time">Mon</span></div>
+        </div>
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox"><span class="material-icons email-star">star_border</span>
+          <span class="email-sender">Discord</span><div class="email-body"><span class="email-subject">New login from Chrome</span><span class="email-snippet">We noticed a login to your account</span></div><div class="email-meta"><span class="email-time">Sun</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== LABEL: UNIVERSITY ===== -->
+    <div class="view" id="view-label-university">
+      <div class="view-header">
+        <span class="label-dot label-university"></span>
+        <h2>University</h2><span class="sub">3 labelled emails</span>
+      </div>
+      <div class="email-list">
+        <div class="email-row unread" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox"><span class="material-icons email-star starred">star</span>
+          <span class="email-sender">Dr.-Ing. Martin Feick</span><div class="email-body"><span class="email-subject">Marks of the Deliverable 1</span><span class="email-snippet">Here you can find the marks for the first deliverable.</span></div><div class="email-meta"><span class="email-label">University</span><div class="followup-badge"><span class="material-icons">flag</span>Follow-up</div><span class="email-time">10:24</span></div>
+        </div>
+        <div class="email-row unread" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox"><span class="material-icons email-star">star_border</span>
+          <span class="email-sender">KIT Studierendenwerk</span><div class="email-body"><span class="email-subject">BAföG Bescheid – Antwort erforderlich</span><span class="email-snippet">Bitte reichen Sie Ihre Nachweise bis zum 15. Juni ein</span></div><div class="email-meta"><span class="email-label">University</span><div class="followup-badge"><span class="material-icons">flag</span>Follow-up</div><span class="email-time">Yesterday</span></div>
+        </div>
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox"><span class="material-icons email-star">star_border</span>
+          <span class="email-sender">GitHub</span><div class="email-body"><span class="email-subject">[Capstone-Repo] Pull request #4 merged</span><span class="email-snippet">Leonard merged your pull request into main</span></div><div class="email-meta"><span class="email-label">University</span><span class="email-time">09:51</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== LABEL: RECEIPTS ===== -->
+    <div class="view" id="view-label-receipts">
+      <div class="view-header">
+        <span class="label-dot label-receipts"></span>
+        <h2>Receipts</h2><span class="sub">2 labelled emails</span>
+      </div>
+      <div class="email-list">
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox"><span class="material-icons email-star">star_border</span>
+          <span class="email-sender">Amazon</span><div class="email-body"><span class="email-subject">Your order has shipped!</span><span class="email-snippet">Estimated delivery: June 7</span></div><div class="email-meta"><span class="email-label">Receipts</span><span class="email-time">Sat</span></div>
+        </div>
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox"><span class="material-icons email-star">star_border</span>
+          <span class="email-sender">Google Play</span><div class="email-body"><span class="email-subject">Your receipt from Google Play</span><span class="email-snippet">Thanks for your purchase</span></div><div class="email-meta"><span class="email-label">Receipts</span><span class="email-time">May 22</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== LABEL: TRAVEL ===== -->
+    <div class="view" id="view-label-travel">
+      <div class="view-header">
+        <span class="label-dot label-travel"></span>
+        <h2>Travel</h2><span class="sub">1 labelled email</span>
+      </div>
+      <div class="email-list">
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox"><span class="material-icons email-star">star_border</span>
+          <span class="email-sender">Booking.com</span><div class="email-body"><span class="email-subject">Reminder: your trip is coming up</span><span class="email-snippet">Your stay in Munich is in 2 weeks</span></div><div class="email-meta"><span class="email-label">Travel</span><span class="email-time">Thu</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SEARCH VIEW ===== -->
+    <div class="view" id="view-search">
+      <div class="search-filters">
+        <span class="filter-label">Filter by:</span>
+        <div class="filter-chip active" onclick="toggleFilter(this)"><span class="material-icons">person</span>From sender</div>
+        <div class="filter-chip" onclick="toggleFilter(this)"><span class="material-icons">attach_file</span>Has attachment</div>
+        <div class="filter-chip" onclick="toggleFilter(this)"><span class="material-icons">schedule</span>Recent (7 days)</div>
+        <div class="filter-chip" onclick="toggleFilter(this)"><span class="material-icons">mark_email_unread</span>Unread only</div>
+        <div class="filter-chip" onclick="toggleFilter(this)"><span class="material-icons">flag</span>Follow-up</div>
+      </div>
+      <div class="search-result-header">Showing results for "<strong id="searchQueryDisplay">müller</strong>"</div>
+      <div class="email-list">
+        <div class="email-row unread" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star starred">star</span>
+          <span class="email-sender">Dr.-Ing. Martin Feick</span>
+          <div class="email-body"><span class="email-subject">Meeting summary required</span><span class="email-snippet">Please send the summary from Thursday's session by Friday</span></div>
+          <div class="email-meta"><div class="followup-badge"><span class="material-icons">flag</span>Follow-up</div><span class="email-time">10:24</span></div>
+        </div>
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star">star_border</span>
+          <span class="email-sender">Dr.-Ing. Martin Feick</span>
+          <div class="email-body"><span class="email-subject">Re: FIS Capstone – Week 4 feedback</span><span class="email-snippet">Good progress overall, please revise the task model</span></div>
+          <div class="email-meta"><span class="email-time">May 12</span></div>
+        </div>
+        <div class="email-row read" onclick="showSnack('Opening email…')">
+          <input type="checkbox" class="email-checkbox">
+          <span class="material-icons email-star">star_border</span>
+          <span class="email-sender">Dr.-Ing. Martin Feick</span>
+          <div class="email-body"><span class="email-subject">Office hours – rescheduled to Thursday</span><span class="email-snippet">Office hours this week will be at 14:00</span></div>
+          <div class="email-meta"><span class="material-icons email-attachment">attach_file</span><span class="email-time">Apr 28</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ===== COMPOSE MODAL ===== -->
+<div class="modal-overlay" id="composeModal">
+  <div class="compose-window">
+    <div class="compose-header">
+      <span>New Message</span>
+      <div style="display:flex;gap:2px;">
+        <button class="compose-hbtn" onclick="showSnack('Minimized to Drafts')"><span class="material-icons" style="font-size:18px;">remove</span></button>
+        <button class="compose-hbtn" onclick="showSnack('Expanded to full screen')"><span class="material-icons" style="font-size:18px;">open_in_full</span></button>
+        <button class="compose-hbtn" onclick="closeCompose()"><span class="material-icons" style="font-size:18px;">close</span></button>
+      </div>
+    </div>
+    <div class="compose-field recipient-field">
+      <label>To</label>
+      <input type="text" placeholder="Recipients" id="composeTo" autocomplete="off" oninput="handleRecipientInput()" onkeydown="handleRecipientKey(event)" onblur="setTimeout(checkRecipientDraft,120)">
+      <span class="field-action" onclick="toggleCcBcc()">Cc Bcc</span>
+      <div class="recipient-suggestions" id="recipientSuggestions"></div>
+    </div>
+    <!-- N4: Draft status appears only after a recipient has been entered -->
+    <div class="draft-reminder neutral" id="draftReminder" style="display:none;margin:0 16px 4px;"></div>
+    <div class="compose-field" id="ccField" style="display:none;">
+      <label>Cc</label>
+      <input type="text" placeholder="Cc recipients">
+    </div>
+    <div class="compose-field" id="bccField" style="display:none;">
+      <label>Bcc</label>
+      <input type="text" placeholder="Bcc recipients">
+    </div>
+    <div class="compose-field">
+      <label>From</label>
+      <input type="text" value="theo.schmidt@gmail.com" readonly style="color:#5f6368;">
+    </div>
+    <div class="compose-body">
+      <input type="text" class="subject-field" placeholder="Subject" id="composeSubject">
+      <textarea id="composeBody" placeholder="Compose email…"></textarea>
+      <!-- N6: Read receipt toggle -->
+      <div class="read-receipt-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="readReceiptToggle">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="rr-label">Request read receipt — know when your email is opened</span>
+      </div>
+    </div>
+    <div class="compose-footer">
+      <button class="send-btn" onclick="sendEmail()">Send</button>
+      <button class="icon-btn" title="Formatting" onclick="showSnack('Formatting options')"><span class="material-icons">text_format</span></button>
+      <button class="icon-btn" title="Attach file" onclick="showSnack('Choose file to attach')"><span class="material-icons">attach_file</span></button>
+      <button class="icon-btn" title="Insert link" onclick="showSnack('Insert link')"><span class="material-icons">link</span></button>
+      <button class="icon-btn" title="Emoji" onclick="showSnack('Emoji picker')"><span class="material-icons">sentiment_satisfied</span></button>
+      <button class="icon-btn" title="More options" style="margin-left:auto;" onclick="showSnack('More options')"><span class="material-icons">more_vert</span></button>
+      <button class="icon-btn" title="Discard draft" onclick="closeCompose()"><span class="material-icons">delete_outline</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PERSONAS MODAL ===== -->
+<div class="personas-modal" id="personasModal">
+  <div class="personas-panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <h2>Personas — FIS Capstone: Gmail Redesign</h2>
+      <button class="icon-btn" onclick="document.getElementById('personasModal').classList.remove('open')">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <p class="personas-subtitle">Based on 11 semi-structured interviews (KIT, May 2026). Primary and secondary personas are design targets. Negative personas define who this redesign is explicitly <em>not</em> optimised for — they act as guardrails against over-simplification or over-complexity.</p>
+    <div class="personas-grid">
+
+      <div class="persona-card positive">
+        <div class="card-type">✓ Primary Persona — Design Target</div>
+        <h3>Theo Schmidt</h3>
+        <div class="persona-role">24 · Student &amp; Research Assistant · KIT</div>
+        <p><strong>Goals:</strong> Keep track of study and personal emails; avoid missing important messages.</p>
+        <p><strong>Behaviour:</strong> Reads on mobile, writes on desktop. Uses stars and unread state as informal reminders. Has never used labels or filters.</p>
+        <p><strong>Frustrations:</strong> Loses overview when many emails arrive; hard to tell which still need a reply.</p>
+        <p><strong>Core need:</strong> Important and follow-up emails stay visible without any manual setup.</p>
+      </div>
+
+      <div class="persona-card secondary">
+        <div class="card-type">✓ Secondary Persona — Design Target</div>
+        <h3>Mathilda Bauer</h3>
+        <div class="persona-role">46 · Professional Gardener</div>
+        <p><strong>Goals:</strong> Use Gmail for account messages without spending time on inbox management.</p>
+        <p><strong>Behaviour:</strong> Checks Gmail 1–2× per week. Leaves all emails in inbox. Uses search when needed.</p>
+        <p><strong>Frustrations:</strong> Inbox cluttered with promotions. Older emails require multiple search attempts.</p>
+        <p><strong>Core need:</strong> Recognise and find relevant emails quickly without configuring anything.</p>
+      </div>
+
+      <div class="persona-card negative">
+        <div class="card-type">✗ Negative Persona — Not our target</div>
+        <h3>David Hartmann</h3>
+        <div class="persona-role">32 · Software Engineer · Power User</div>
+        <p><strong>Profile:</strong> Manages 200+ emails daily. Uses keyboard shortcuts, custom filters, nested labels, and third-party integrations (Zapier, Superhuman). Practices zero-inbox discipline.</p>
+        <p><strong>Why excluded:</strong> The redesign's auto-sorting and simplified defaults would override his carefully tuned workflow. The "Needs Attention" section is redundant for him — he already has a system. Designing for David would push us toward exposing complex configuration panels that Theo would find overwhelming.</p>
+        <p><strong>Design guardrail:</strong> Don't hide advanced features entirely — keep labels/filters accessible but non-mandatory.</p>
+      </div>
+
+      <div class="persona-card negative">
+        <div class="card-type">✗ Negative Persona — Not our target</div>
+        <h3>Emma Weber</h3>
+        <div class="persona-role">19 · High School Student · Near-Zero Email User</div>
+        <p><strong>Profile:</strong> Opens Gmail fewer than twice a month, only for school registration confirmations. All real communication happens via Instagram and WhatsApp.</p>
+        <p><strong>Why excluded:</strong> No inbox redesign changes her email habits — the medium is irrelevant to her. Follow-up flags, read receipts, and smart search add zero value when you send fewer than 5 emails per month.</p>
+        <p><strong>Design guardrail:</strong> Don't strip the interface to a single button. Frequent users (Theo, Mathilda) need depth — radical simplification would break their workflows.</p>
+      </div>
+
+    </div>
+    <div class="design-note">
+      <strong>Design implication:</strong> David and Emma sit at opposite extremes of email engagement. Our redesign targets the <em>aware but passive organiser</em> in between — someone who uses Gmail daily but relies on the simplest possible strategies (stars, unread state, search). The negative personas prevent us from drifting toward either extreme: adding power-user configuration panels (for David) or removing all structure (for Emma).
+    </div>
+  </div>
+</div>
+
+<!-- SNACKBAR -->
+<div class="snackbar" id="snackbar"></div>
+
+<script>
+
+const contacts = [
+  {name:'Frank Berger', email:'frank@gmail.com'},
+  {name:'Santiago Tawata', email:'santiago.t@gmail.com'},
+  {name:'Dr.-Ing. Martin Feick', email:'martin.feick@kit.edu'},
+  {name:'Malik Aljazzar', email:'malik.aljazzar@student.kit.edu'},
+  {name:'Leonard Lohfink', email:'leonard.lohfink@student.kit.edu'},
+  {name:'KIT Studierendenwerk', email:'service@studierendenwerk-kit.de'}
+];
+
+const draftsByRecipient = {
+  'santiago.t@gmail.com': {
+    subject: 'Re: Project update for Q3',
+    age: '3 days ago'
+  }
+};
+
+function normalizeEmail(value) {
+  return value.trim().toLowerCase().replace(/^.*<(.+)>$/, '$1');
+}
+
+function isEmailLike(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail(value));
+}
+
+function handleRecipientInput() {
+  const input = document.getElementById('composeTo');
+  const box = document.getElementById('recipientSuggestions');
+  const q = input.value.trim().toLowerCase();
+  document.getElementById('draftReminder').style.display = 'none';
+  if (!q) { box.classList.remove('open'); box.innerHTML = ''; return; }
+
+  const matches = contacts.filter(c => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)).slice(0,4);
+  if (!matches.length) { box.classList.remove('open'); box.innerHTML = ''; return; }
+
+  box.innerHTML = matches.map(c => `
+    <div class="recipient-suggestion" onmousedown="selectRecipient('${c.email.replace(/'/g,"\\'")}')">
+      <div class="recipient-avatar">${c.name.split(' ').map(p=>p[0]).slice(0,2).join('')}</div>
+      <div class="recipient-meta">
+        <span class="recipient-name">${c.name}</span>
+        <span class="recipient-email">${c.email}</span>
+      </div>
+    </div>
+  `).join('');
+  box.classList.add('open');
+}
+
+function handleRecipientKey(e) {
+  if (e.key === 'Enter') {
+    const first = document.querySelector('.recipient-suggestion');
+    if (first) { e.preventDefault(); first.dispatchEvent(new MouseEvent('mousedown')); }
+    else setTimeout(checkRecipientDraft,0);
+  }
+}
+
+function selectRecipient(email) {
+  document.getElementById('composeTo').value = email;
+  document.getElementById('recipientSuggestions').classList.remove('open');
+  checkRecipientDraft();
+}
+
+function checkRecipientDraft() {
+  const input = document.getElementById('composeTo');
+  const reminder = document.getElementById('draftReminder');
+  const email = normalizeEmail(input.value);
+  document.getElementById('recipientSuggestions').classList.remove('open');
+
+  if (!email) { reminder.style.display = 'none'; return; }
+  if (!isEmailLike(email)) { reminder.style.display = 'none'; return; }
+
+  const draft = draftsByRecipient[email];
+  if (draft) {
+    reminder.classList.remove('neutral');
+    reminder.innerHTML = `<span class="material-icons">drafts</span>
+      You already have an unfinished draft to ${email} (${draft.age}).&nbsp;
+      <a onclick="loadDraft('${email}')">Continue draft</a>`;
+  } else {
+    reminder.classList.add('neutral');
+    reminder.innerHTML = `<span class="material-icons">check_circle</span>
+      No unfinished draft found for ${email}.`;
+  }
+  reminder.style.display = 'flex';
+}
+
+function loadDraft(email) {
+  const draft = draftsByRecipient[email];
+  document.getElementById('composeSubject').value = draft ? draft.subject : '';
+  document.getElementById('composeBody').value = draft ? 'Hi Santiago,\n\nI wanted to follow up on the timeline we discussed...' : '';
+  showSnack('Draft loaded');
+}
+
+function toggleCcBcc() {
+  const cc = document.getElementById('ccField');
+  const bcc = document.getElementById('bccField');
+  const show = cc.style.display === 'none';
+  cc.style.display = show ? 'flex' : 'none';
+  bcc.style.display = show ? 'flex' : 'none';
+}
+
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  sb.style.display = sb.style.display === 'none' ? 'block' : 'none';
+}
+
+function showView(id, navEl) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const v = document.getElementById('view-' + id);
+  if (v) v.classList.add('active');
+  if (navEl) navEl.classList.add('active');
+}
+
+function setTab(el) {
+  el.closest('.tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function openCompose(prefillTo='') {
+  document.getElementById('composeModal').classList.add('open');
+  document.getElementById('draftReminder').style.display = 'none';
+  document.getElementById('recipientSuggestions').classList.remove('open');
+  document.getElementById('ccField').style.display = 'none';
+  document.getElementById('bccField').style.display = 'none';
+  if (prefillTo) {
+    document.getElementById('composeTo').value = prefillTo;
+    checkRecipientDraft();
+  } else {
+    document.getElementById('composeTo').value = '';
+  }
+}
+function closeCompose() {
+  document.getElementById('composeModal').classList.remove('open');
+  showSnack('Draft saved');
+}
+function sendEmail() {
+  const to = document.getElementById('composeTo').value.trim();
+  if (!to) { showSnack('Please add a recipient'); return; }
+  if (!isEmailLike(to)) { showSnack('Please enter a valid email address'); return; }
+  document.getElementById('composeModal').classList.remove('open');
+  const rr = document.getElementById('readReceiptToggle').checked;
+  showSnack('Message sent' + (rr ? ' · Read receipt requested' : ''));
+  document.getElementById('composeTo').value = '';
+  document.getElementById('composeSubject').value = '';
+  document.getElementById('composeBody').value = '';
+  document.getElementById('readReceiptToggle').checked = false;
+  document.getElementById('draftReminder').style.display = 'none';
+  document.getElementById('recipientSuggestions').classList.remove('open');
+}
+
+function showSearch() {
+  const val = document.getElementById('searchInput').value.trim();
+  if (!val) return;
+  document.getElementById('searchQueryDisplay').textContent = val;
+  showView('search', null);
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+}
+
+function toggleFilter(el) { el.classList.toggle('active'); }
+
+function togglePromotions() {
+  const rows = document.getElementById('promotionsRows');
+  const label = document.getElementById('promoToggleLabel');
+  rows.classList.toggle('expanded');
+  label.textContent = rows.classList.contains('expanded') ? 'Hide' : 'Show';
+}
+
+function toggleSection() {
+  const chips = document.getElementById('attnChips');
+  const icon = document.getElementById('attnIcon');
+  const hidden = chips.style.display === 'none';
+  chips.style.display = hidden ? 'flex' : 'none';
+  icon.textContent = hidden ? 'expand_less' : 'expand_more';
+}
+
+let snackT;
+function showSnack(msg) {
+  const s = document.getElementById('snackbar');
+  s.textContent = msg;
+  s.classList.add('show');
+  clearTimeout(snackT);
+  snackT = setTimeout(() => s.classList.remove('show'), 2500);
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') showSearch(); });
+document.getElementById('personasModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+document.getElementById('composeModal').addEventListener('click', function(e) { if (e.target === this) closeCompose(); });
+
+document.querySelectorAll('.email-star').forEach(star => {
+  star.addEventListener('click', e => {
+    e.stopPropagation();
+    const starred = star.classList.toggle('starred');
+    star.textContent = starred ? 'star' : 'star_border';
+    showSnack(starred ? 'Added to Starred' : 'Removed from Starred');
+  });
+});
+
+document.querySelectorAll('.email-checkbox').forEach(cb => {
+  cb.addEventListener('click', e => e.stopPropagation());
+});
+
+</script>
+</body>
+</html>
